@@ -1,0 +1,33 @@
+{
+  "categories": [
+    "Academic",
+    "Career",
+    "Digital",
+    "Outside",
+    "Physical",
+    "Social"
+  ],
+  "tasks": [
+    {
+      "body": "Cook meals for the week.",
+      "category": "Physical",
+      "repeat_interval": "",
+      "repeat_mode": "",
+      "start_date": "2015-07-29"
+    },
+    {
+      "body": "Scan in lots of old papers gradually.",
+      "category": "Digital",
+      "repeat_interval": "",
+      "repeat_mode": "",
+      "start_date": "2015-07-30"
+    },
+    {
+      "body": "Walk the dog.",
+      "category": "Physical",
+      "repeat_interval": "",
+      "repeat_mode": "",
+      "start_date": "2015-08-04"
+    }
+  ]
+}

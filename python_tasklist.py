@@ -2,7 +2,6 @@ from colored import fg, bg, attr
 from datetime import datetime, timedelta
 from operator import itemgetter, attrgetter
 from pprint import pprint
-from termcolor import colored, cprint
 import calendar
 import json
 import os
@@ -48,7 +47,23 @@ class TaskList:
         """Return all the tasks on a given date in a given category."""
         tasks = []
         for t in self.tasks_on_date(date):
-            if t.category == category:
+            if t.category == category and t.repeat_mode == '':
+                tasks.append(t)
+        return tasks
+
+    def do_repeat(self, t, date):
+        """Return whether or not the Task t should occur on the date."""
+        if t.repeat_mode == 'Every':
+            if t.repeat_interval == '1 day':
+                return True
+        return False
+
+    def repeat_tasks_by_date_category(self, date, category):
+        """Return repeat tasks scheduled on a given date in a given category."""
+        #tasks = [t for t in self.tasks_on_date(date) if t.category == ]
+        tasks = []
+        for t in self.tasks_on_date(date):
+            if t.category == category and self.do_repeat(t, date):
                 tasks.append(t)
         return tasks
 
@@ -56,22 +71,37 @@ class TaskList:
         """Return the number of tasks scheduled on a given date."""
         return len(self.tasks_on_date(date))
 
-    def print_tasks_for_date(self, date):
-        """Print a formatted list of all tasks on a given date."""
-        day_categories = self.categories_on_date(date)
+    def print_task_line(self, t):
+        """Print a Task readout for the user."""
+        box_color = bg(20)
+        repeat_color = bg(28)
+        reset = attr('reset')
+        if t.repeat_mode == '':
+            print("    {0}[{1}]{2} {3}".format(box_color, t.task_id, reset, t.body)) 
+        else:
+            print("    {0}[{1}]{2} {3}[Repeat]{4} {5}".format(box_color, t.task_id, reset, repeat_color, reset, t.body)) 
+
+    def print_date_header(self, date):
+        """Print a date header for the user."""
         count = str(self.task_count(date))
         date_str = date.strftime('%A, %B %-d:')
         date_str = "\n{:25s} ({:1s} tasks)".format(date_str, count)
         color = fg(11)
-        box_color = bg(20)
         reset = attr('reset')
         print(color + date_str + reset)
+
+    def print_tasks_for_date(self, date):
+        """Print a formatted list of all tasks on a given date."""
+        day_categories = self.categories_on_date(date)
+        self.print_date_header(date)
         for c in day_categories:
             tasks = self.tasks_by_date_category(date, c)
+            repeat_tasks = self.repeat_tasks_by_date_category(date, c)
             print("  {0}:".format(c))
+            for t in repeat_tasks:
+                self.print_task_line(t)
             for t in tasks:
-                print("    {0}[{1}]{2} {3}".format(box_color, t.task_id, reset, 
-                                                   t.body))
+                self.print_task_line(t)
                 if t is tasks[-1] and c is not day_categories[-1]:
                     print()
 
@@ -102,6 +132,8 @@ class TaskList:
             rep = {}
             rep["body"] = t.body
             rep["category"] = t.category
+            rep["repeat_mode"] = t.repeat_mode
+            rep["repeat_interval"] = t.repeat_interval
             rep["start_date"] = date2str(t.start_date)
             data['tasks'].append(rep)
 
@@ -181,7 +213,7 @@ class TaskList:
         """Add a category to the TaskList."""
         self.categories.append(name)
     
-    def match_weekday(self, sub):
+    def match_weekday(self, sub, mode=''):
         """
         Match a substring to a weekday name and return a date.
         Ex: 'Sun' yields the int date for the next upcoming Sunday.
@@ -197,25 +229,9 @@ class TaskList:
             d += dt
             while d.weekday() != match[1]:
                 d += dt
-            return d.day
-
-    def match_weekday_full(self, sub):
-        """
-        Match a substring to a weekday name and return full date string.
-        Ex: 'Sun' yields a date string for the next upcoming Sunday.
-        Ex: If today is Sunday, 'Sun' yields the next upcoming Sunday.
-        """
-        weekdays = [("Sunday", 6), ("Monday", 0), ("Tuesday", 1),
-                    ("Wednesday", 2), ("Thursday", 3), ("Friday", 4), 
-                    ("Saturday", 5)]
-        match = next(w for w in weekdays if sub in w[0])
-        if match:
-            d = datetime.now()
-            dt = timedelta(days=1)
-            d += dt
-            while d.weekday() != match[1]:
-                d += dt
-            result = "{0}-{1}-{2}".format(d.year, d.month, d.day)
+            result = d.day
+            if mode == 'full':
+                result = "{0}-{1}-{2}".format(d.year, d.month, d.day)
             return result
 
     def match_date(self, day):
@@ -232,9 +248,11 @@ class TaskList:
             result = "{0}-{1}-{2}".format(n.year, m, day)
         except ValueError:
             today = (day == 't')
-            weekday = self.match_weekday_full(day)
+            weekday = self.match_weekday(day, 'full')
             if today:
                 date = n.day
+                m = n.month
+                result = "{0}-{1}-{2}".format(n.year, m, date)
             elif weekday:
                 return weekday
             else:
@@ -258,10 +276,12 @@ class Task:
     """Tasks that the user wants to complete."""
 
     def __init__(self, task_id, data):
-        self.task_id = task_id
         self.body = data['body']
         self.category = data['category']
+        self.repeat_mode = data.get('repeat_mode', '')
+        self.repeat_interval = data.get('repeat_interval', '')
         self.start_date = str2date(data['start_date'])
+        self.task_id = task_id
 
     def move_to(self, date):
         """Move this task to the new date."""
@@ -331,6 +351,7 @@ def input_prompt(t):
     move_task = re.match('(\d+)m\s*(\d+|\w+)$', u)
     new_task = re.match('n (.*); (.*); (\d+|\w+)$', u)
     delete_task = re.match('(\d+)d$', u)
+
     if move_task:
         t.move_task(move_task.groups())
         return "reload"
@@ -344,7 +365,7 @@ def input_prompt(t):
         try:
             return options[u](args)
         except KeyError:
-            print("Invalid input. Please try again. blah")
+            print("Invalid input. Please try again.")
 
 def show_main_screen(t):
     """Show main screen of tasks to the user."""
