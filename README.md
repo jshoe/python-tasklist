@@ -5,6 +5,7 @@ A personal command-line tasklist / todos manager:
 - Demo JSON data is included in demo_data.txt.
 - Project is a work in progress.
 <br><br>
+
 ## Commands:
 - New task format is: "n Task body; Category; Date"
   - "n Do the laundry; Physical; t" adds the task with the category tag 'Physical' on today. 
