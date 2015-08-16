@@ -1,6 +1,9 @@
 # Python Tasklist Manager
 
-A personal command-line tasklist / todos manager. Some Vim-style commands. Work in progress.
+A personal command-line tasklist / todos manager:
+- Some Vim-style commands.
+- Demo JSON data is included in demo_data.txt.
+- Project is a work in progress.
 <br><br>
 ## Commands:
 - New task format is: "n Task body; Category; Date"
@@ -14,8 +17,6 @@ A personal command-line tasklist / todos manager. Some Vim-style commands. Work 
 - Delete task format is: "TaskNum\d"
   - "1d" deletes the task labeled #1.
 - Save / quit commands are w/q/wq.
-
-Date authored: July 28, 2015
 <br><br>
 
 ![interface screenshot](shot1.png)
