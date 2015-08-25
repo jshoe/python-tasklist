@@ -1,5 +1,5 @@
 from colored import fg, bg, attr
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from operator import itemgetter, attrgetter
 from pprint import pprint
 import calendar
@@ -81,14 +81,18 @@ class TaskList:
         else:
             print("    {0}[{1}]{2} {3}[Repeat]{4} {5}".format(box_color, t.task_id, reset, repeat_color, reset, t.body)) 
 
-    def print_date_header(self, date):
+    def print_date_header(self, d):
         """Print a date header for the user."""
-        count = str(self.task_count(date))
-        date_str = date.strftime('%A, %B %-d:')
+        count = str(self.task_count(d))
+        date_str = d.strftime('%A, %B %-d:')
         date_str = "\n{:25s} ({:1s} tasks)".format(date_str, count)
         color = fg(11)
         reset = attr('reset')
-        print(color + date_str + reset)
+        if d.date() == datetime.today().date():
+            highlight = bg(5) # Highlight today
+            print(color + highlight + date_str + reset)
+        else:
+            print(color + date_str + reset)
 
     def print_tasks_for_date(self, date):
         """Print a formatted list of all tasks on a given date."""
