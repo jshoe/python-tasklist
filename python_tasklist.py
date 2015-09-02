@@ -83,6 +83,8 @@ class TaskList:
 
     def print_date_header(self, d):
         """Print a date header for the user."""
+        if d.date() < datetime.today().date() and self.task_count(d) == 0:
+            return # Don't show old 0-task days
         count = str(self.task_count(d))
         date_str = d.strftime('%A, %B %-d:')
         date_str = "\n{:25s} ({:1s} tasks)".format(date_str, count)
@@ -100,10 +102,10 @@ class TaskList:
         self.print_date_header(date)
         for c in day_categories:
             tasks = self.tasks_by_date_category(date, c)
-            repeat_tasks = self.repeat_tasks_by_date_category(date, c)
+            #repeat_tasks = self.repeat_tasks_by_date_category(date, c)
             print("  {0}:".format(c))
-            for t in repeat_tasks:
-                self.print_task_line(t)
+            #for t in repeat_tasks:
+            #    self.print_task_line(t)
             for t in tasks:
                 self.print_task_line(t)
                 if t is tasks[-1] and c is not day_categories[-1]:
@@ -371,6 +373,9 @@ def input_prompt(t):
         except KeyError:
             print("Invalid input. Please try again.")
 
+def print_divide():
+    print("\n==========================================================================\n")
+
 def show_main_screen(t):
     """Show main screen of tasks to the user."""
     os.system('clear')
@@ -381,6 +386,7 @@ def show_main_screen(t):
     while run:
         ret = input_prompt(t)
         if ret == "reload":
+            print_divide()
             show_main_screen(t)
             break
         elif ret == "quit":
