@@ -86,15 +86,21 @@ class TaskList:
         if d.date() < datetime.today().date() and self.task_count(d) == 0:
             return # Don't show old 0-task days
         count = str(self.task_count(d))
+        print()
         date_str = d.strftime('%A, %B %-d:')
-        date_str = "\n{:25s} ({:1s} tasks)".format(date_str, count)
-        color = fg(11)
-        reset = attr('reset')
-        if d.date() == datetime.today().date():
-            highlight = bg(5) # Highlight today
-            print(color + highlight + date_str + reset)
+        date_str = "{:25s} ({:1s} tasks)".format(date_str, count)
+        if d.strftime('%A') == 'Sunday':
+            printc('Sunday', 11, 25)
+            printc("{:19s} ({:1s} tasks)".format(d.strftime(', %B %-d:'), count), 11, 0)
+            print()
         else:
-            print(color + date_str + reset)
+            color = fg(11)
+            reset = attr('reset')
+            if d.date() == datetime.today().date():
+                highlight = bg(5) # Highlight today
+                print(color + highlight + date_str + reset)
+            else:
+                print(color + date_str + reset)
 
     def print_tasks_for_date(self, date):
         """Print a formatted list of all tasks on a given date."""
@@ -305,6 +311,9 @@ def str2date(string):
 def date2str(date):
     """Convert a datetime object into a string formatted like 2015-07-21."""
     return date.strftime("%Y-%m-%d")
+
+def printc(to_print, fg_code=15, bg_code=0):
+    print(fg(fg_code) + bg(bg_code) + to_print + attr('reset'), end="")
 
 def print_month_cals():
     """Print a calendar of the current and next month for the user."""
