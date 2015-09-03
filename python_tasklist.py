@@ -83,24 +83,22 @@ class TaskList:
 
     def print_date_header(self, d):
         """Print a date header for the user."""
-        if d.date() < datetime.today().date() and self.task_count(d) == 0:
-            return # Don't show old 0-task days
-        count = str(self.task_count(d))
+        count = self.task_count(d)
+        today = datetime.today().date()
+        if d.date() < today and count == 0: return # Hide old 0-task days
         print()
-        date_str = d.strftime('%A, %B %-d:')
-        date_str = "{:25s} ({:1s} tasks)".format(date_str, count)
-        if d.strftime('%A') == 'Sunday':
-            printc('Sunday', 11, 25)
-            printc("{:19s} ({:1s} tasks)".format(d.strftime(', %B %-d:'), count), 11, 0)
-            print()
+        weekday = d.strftime('%A')
+        rest = d.strftime(', %B %-d:')
+        both = weekday + rest
+        both_ln = "{:25s} ({:1s} tasks)".format(both, str(count))
+        rest_ln = "{:19s} ({:1s} tasks)".format(rest, str(count)) 
+        bg_code = 0
+        if d.date() == today: bg_code = 5
+        if weekday == 'Sunday':
+            printc(weekday, 11, 25, False)
+            printc(rest_ln, 11, bg_code)
         else:
-            color = fg(11)
-            reset = attr('reset')
-            if d.date() == datetime.today().date():
-                highlight = bg(5) # Highlight today
-                print(color + highlight + date_str + reset)
-            else:
-                print(color + date_str + reset)
+            printc(both_ln, 11, bg_code)
 
     def print_tasks_for_date(self, date):
         """Print a formatted list of all tasks on a given date."""
@@ -312,8 +310,9 @@ def date2str(date):
     """Convert a datetime object into a string formatted like 2015-07-21."""
     return date.strftime("%Y-%m-%d")
 
-def printc(to_print, fg_code=15, bg_code=0):
+def printc(to_print, fg_code=15, bg_code=0, end_line=True):
     print(fg(fg_code) + bg(bg_code) + to_print + attr('reset'), end="")
+    if end_line: print()
 
 def print_month_cals():
     """Print a calendar of the current and next month for the user."""
