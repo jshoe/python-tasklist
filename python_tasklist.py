@@ -89,9 +89,9 @@ class TaskList:
         print()
         weekday = d.strftime('%A')
         rest = d.strftime(', %B %-d:')
+        rest_ln = "{:19s} ({:1s} tasks)".format(rest, str(count)) 
         both = weekday + rest
         both_ln = "{:25s} ({:1s} tasks)".format(both, str(count))
-        rest_ln = "{:19s} ({:1s} tasks)".format(rest, str(count)) 
         bg_code = 0
         if d.date() == today: bg_code = 5
         if weekday == 'Sunday':
